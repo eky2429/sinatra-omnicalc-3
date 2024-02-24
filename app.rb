@@ -41,3 +41,11 @@ post("/process_umbrella") do
 
   erb(:umbrella_results)
 end
+
+get("/message") do
+  erb(:message)
+end
+
+get("/chat") do
+  erb(:chat)
+end
