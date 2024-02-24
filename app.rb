@@ -4,8 +4,7 @@ require "http"
 
 get("/") do
   "
-  <h1>Welcome to your Sinatra App!</h1>
-  <p>Define some routes in app.rb</p>
+  <h1>Welcome to Omnicalc 3!</h1>
   "
 end
 
@@ -27,6 +26,18 @@ post("/process_umbrella") do
   @lat = gmaps_loc.fetch("lat")
   @lon = gmaps_loc.fetch("lng")
 
-  #pirate_weather_info = JSON.parse(HTTP.get("https://api.pirateweather.net/forecast/#{PIRATE_WEATHER_KEY}/#{latitude},#{longitude}"))
+  pweather_url = "https://api.pirateweather.net/forecast/#{PIRATE_WEATHER_KEY}/#{@lat},#{@lon}"
+  pweather_response = HTTP.get(pweather_url)
+  pweather_info = JSON.parse(pweather_response)
+  @cur_temp = pweather_info.dig("currently", "temperature")
+  @cur_summ = pweather_info.dig("currently", "summary")
+  precip_perc = pweather_info.dig("currently", "precipProbability")
+  precip_prob = (precip_perc * 100).round
+  if precip_prob >= 10
+    @message = "You might want to take an umbrella!"
+  else
+    @message = "You probably won't need an umbrella."
+  end
+
   erb(:umbrella_results)
 end
