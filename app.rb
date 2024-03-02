@@ -2,10 +2,9 @@ require "sinatra"
 require "sinatra/reloader"
 require "http"
 
+
 get("/") do
-  "
-  <h1>Welcome to Omnicalc 3!</h1>
-  "
+  erb(:main)
 end
 
 get("/umbrella") do
@@ -44,6 +43,41 @@ end
 
 get("/message") do
   erb(:message)
+end
+
+post("/process_message") do
+  @message = params.fetch("message")
+  GBT_CLIENT_KEY = ENV.fetch("GBT_CLIENT_KEY")
+
+  request_headers_hash = {
+    "Authorization" => "Bearer #{GBT_CLIENT_KEY}",
+    "content-type" => "application/json"
+  }
+
+  request_body_hash = {
+    "model" => "gpt-3.5-turbo",
+    "messages" => [
+      {
+        "role" => "system",
+        "content" => "You are a helpful assistant who talks like Shakespeare."
+      },
+      {
+        "role" => "user",
+        "content" => "#{@message}"
+      }
+    ]
+  }
+
+  request_body_json = JSON.generate(request_body_hash)
+
+  raw_response = HTTP.headers(request_headers_hash).post(
+    "https://api.openai.com/v1/chat/completions",
+    :body => request_body_json
+  ).to_s
+
+  parsed_response = JSON.parse(raw_response)
+
+  #erb(:message_results)
 end
 
 get("/chat") do
